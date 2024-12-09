@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -48,7 +49,7 @@ def get_forecast(lat, lon):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_from_directory(os.getcwd(), 'index.html')
 
 @app.route('/weather', methods=['POST'])
 def weather():
