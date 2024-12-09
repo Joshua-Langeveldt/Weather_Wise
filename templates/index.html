@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">Weather🌥️App</h1>
+    <form id="weather-form" class="form-inline justify-content-center">
+        <div class="form-group mb-2">
+            <input type="text" id="city" class="form-control" placeholder="Enter city name" required>
+        </div>
+        <button type="submit" class="btn btn-danger mb-2 ml-2">Search</button>
+    </form>
+    <div id="loader" class="spinner-border text-info my-3" style="display: none;"></div>
+    <div id="weather-result" class="mt-4" style="display: none;">
+        <h2 id="location" class="text"></h2>
+        <img id="icon" alt="Weather icon">
+        <p id="temperature"></p>
+        <p id="description"></p>
+        <p id="wind"></p>
+        <p id="humidity"></p>
+        <div id="forecast" class="row mt-4"></div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#weather-form').submit(function(event) {
+            event.preventDefault();
+            const city = $('#city').val();
+            $('#loader').show();
+            $('#weather-result').hide();
+            $.post('/weather', {city: city}, function(data) {
+                $('#loader').hide();
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    const current = data.current;
+                    const forecast = data.forecast;
+                    $('#location').text(`${current[5]}, ${current[6]}`);
+                    $('#icon').attr('src', current[0]);
+                    $('#temperature').text(`Temperature: ${current[1].toFixed(2)}°C`);
+                    $('#description').text(`Description: ${current[2].charAt(0).toUpperCase() + current[2].slice(1)}`);
+                    $('#wind').text(`Wind Speed: ${current[3]} m/s`);
+                    $('#humidity').text(`Humidity: ${current[4]}%`);
+
+                    $('#forecast').empty();
+                    forecast.forEach((item, index) => {
+                        $('#forecast').append(`
+                            <div class="col-md-3">
+                                <div class="card text-white bg-dark mb-3">
+                                    <div class="card-header">Day ${index + 1}</div>
+                                    <div class="card-body">
+                                        <img src="${item[2]}" alt="Forecast icon" class="img-fluid">
+                                        <p class="card-text">Temp: ${item[0].toFixed(2)}°C</p>
+                                        <p class="card-text">${item[1]}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    });
+
+                    $('#weather-result').show();
+                }
+            }).fail(function() {
+                $('#loader').hide();
+                alert('Error retrieving weather data');
+            });
+        });
+    });
+</script>
+</body>
+</html>
